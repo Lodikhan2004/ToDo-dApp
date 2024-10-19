@@ -74,8 +74,13 @@ const HomePage = ({ provider, currentWalletAddress }: PageProps) => {
 
 
   // Step D - Configure Todo Form
-  const form = useForm<z.infer<typeof formSchema>>();
-
+const form = useForm<z.infer<typeof formSchema>>({
+  resolver: zodResolver(formSchema),
+  defaultValues: {
+    name: "",
+    description: "",
+  },
+});
   // ============ Start Filter Data ============ //
   const pendingTask = useMemo(() => {
     if (todoData.length === 0) {
@@ -129,14 +134,58 @@ const HomePage = ({ provider, currentWalletAddress }: PageProps) => {
 
   // ============ Start ToDo dApp Functions ============ //
 
-  // step 8 - Get Todo Data from User's wallet using contract
-  const getTodoData = async () => {};
+  // step 8 - Fetch All Tasks
+const getTodoData = async () => {
+  try {
+    const result = await smartContract?.callViewMethod("ListTasks", {
+      value: currentWalletAddress,
+    });
+    console.log("result", result?.data);
+    setTodoData(result?.data ? result?.data.tasks : []);
+  } catch (error) {
+    console.log("error======", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  // step 1 - Check If Contract is Initialized or not 
-  const checkIsContractInitialized = async () => {};
+  // step 1 - Check if contract is initialized or not
+const checkIsContractInitialized = async () => {
+  const result = await smartContract?.callViewMethod("GetInitialStatus", ""); // Call the GetInitialStatus method which is present on Smart Contract
+  setIsContractInitialized(result?.data?.value); // Expect value True if it's Initialized otherwise NULL if it's not
+};
 
-  // step 2 - Intitialize The Contract Very First Time
-  const initializeContract = async () => {};
+ // step 2 - Initialize the smart contract
+const initializeContract = async () => {
+  let initializeLoadingId;
+  try {
+    // Start Loading
+    initializeLoadingId = toast.loading("Initializing a Contract..");
+
+    await smartContract?.callSendMethod(
+      "Initialize", // Function Name
+      currentWalletAddress as string, // User Wallet Address 
+      {} // No Arguments
+    );
+
+    // Update Loading Message with Success
+    toast.update(initializeLoadingId, {
+      render: "Contract Successfully Initialized",
+      type: "success",
+      isLoading: false,
+    });
+  } catch (error: any) {
+    // Update Loading Message with Error
+    toast.update(initializeLoadingId as Id, {
+      render: error.message,
+      type: "error",
+      isLoading: false,
+    });
+  } finally {
+    // Remove Loading Message
+    removeNotification(initializeLoadingId as Id);
+  }
+};
 
   // Check whether contract initialized or not
   useEffect(() => {
@@ -150,24 +199,199 @@ const HomePage = ({ provider, currentWalletAddress }: PageProps) => {
     }
   }, [currentWalletAddress]);
 
-  // step 3 - Create a New Task using Smart Contract
-  const createNewTask = async () => {};
+ // step 3 - Create a New Task using Smart Contract
+const createNewTask = async (values: {
+  name: string;
+  description: string;
+}) => {
+  let createLoadingId;
+  try {
+    // Start Loading
+    createLoadingId = toast.loading("Creating a New Task..");
+    setFormLoading(true);
 
-  // step 4 - Update the Task
-  const updateTask = async () => {};
+    // Prepare Arguments for Create a New Task
+    const sendData = {
+      name: values.name,
+      description: values.description,
+      category: selectedCategory?.value,
+      status: TASK_STATUS.pending,
+    };
 
-  // step 5- Update Status from Pending to Completed of the Task
-  const completeTask = async () => {};
+    // Call CreateTask Function of Smart Contract
+    await smartContract?.callSendMethod(
+      "CreateTask",
+      currentWalletAddress as string,
+      sendData
+    );
 
-  // step 6 - Delete the Task
-  const deleteTask = async () => {};
+    // Update Loading Message with Success
+    toast.update(createLoadingId, {
+      render: "New Task Successfully Created",
+      type: "success",
+      isLoading: false,
+    });      
 
+    // Get New Data from Contract
+    getTodoData();
+  } catch (error: any) {
+    // Update Loading Message with Error
+    toast.update(createLoadingId as Id, {
+      render: error.message,
+      type: "error",
+      isLoading: false,
+    });
+  } finally {
+    // Close Form Modal
+    handleCloseModal();
+
+    // Remove Loading Message
+    removeNotification(createLoadingId as Id);
+    setFormLoading(false);
+  }
+};
+ // step 4 - Update an Existing Task
+const updateTask = async (values: { name: string; description: string }) => {
+  let updateLoadingId;
+  try {
+    // Start Loading
+    updateLoadingId = toast.loading("Updating a Task..");
+    setFormLoading(true);
+
+    // Prepare Arguments for Update the Task
+    const sendData = {
+      taskId: updateId,
+      name: values.name,
+      description: values.description,
+      category: selectedCategory?.value,
+      status: TASK_STATUS.pending,
+    };
+
+    // Call UpdateTask Function of Smart Contract
+    await smartContract?.callSendMethod(
+      "UpdateTask",
+      currentWalletAddress as string,
+      sendData
+    );
+
+    // Update Loading Message with Success
+    toast.update(updateLoadingId, {
+      render: "Task Successfully Updated",
+      type: "success",
+      isLoading: false,
+    });
+
+    // Get New Data from Contract
+    getTodoData();
+  } catch (error: any) {
+    // Update Loading Message with Error
+    toast.update(updateLoadingId as Id, {
+      render: error.message,
+      type: "error",
+      isLoading: false,
+    });
+  } finally {
+    // Close Form Modal
+    handleCloseModal();
+    // Remove Loading Message
+    removeNotification(updateLoadingId as Id);
+    setFormLoading(false);
+  }
+};
+
+ // step 5- Update Status from Pending to Completed of the Task
+const completeTask = async (data: ITodoObject) => {
+  let completeLoadingId;
+  try {
+    // Start Loading
+    completeLoadingId = toast.loading("Moving to Completed Task..");
+    setUpdateId(data.taskId); // set Update Id for Loading on Button
+
+    // Call UpdateTask Function of Smart Contract
+    await smartContract?.callSendMethod(
+      "UpdateTask",
+      currentWalletAddress as string,
+      { ...data, status: TASK_STATUS.completed }
+    );
+
+    // Update Loading Message with Success
+    toast.update(completeLoadingId, {
+      render: "Task Moved to Completed",
+      type: "success",
+      isLoading: false,
+    });
+
+    // Get New Data from Contract
+    await getTodoData();
+  } catch (error: any) {
+    // Update Loading Message with Error
+    toast.update(completeLoadingId as Id, {
+      render: error.message,
+      type: "error",
+      isLoading: false,
+    });
+  } finally {
+    setUpdateId(null);
+    // Remove Loading Message
+    removeNotification(completeLoadingId as Id);
+  }
+};
+
+ // step 6 - Delete the Task
+const deleteTask = async (data: ITodoObject) => {
+  let deleteLoadingId;
+  try {
+    // Start Loading
+    deleteLoadingId = toast.loading("Removing a Task..");
+    setDeletingId(data.taskId); // set Deleting Id for Loading on Button
+
+    // Call UpdateTask Function of Smart Contract and update the status as "Removed"
+    await smartContract?.callSendMethod(
+      "UpdateTask",
+      currentWalletAddress as string,
+      { ...data, status: TASK_STATUS.removed }
+    );
+    
+    // Update Loading Message with Success
+    toast.update(deleteLoadingId, {
+      render: "Task Successfully Removed",
+      type: "success",
+      isLoading: false,
+    });
+
+    // Get New Data from Contract
+    await getTodoData();
+  } catch (error: any) {
+    // Update Loading Message with Error
+    toast.update(deleteLoadingId as Id, {
+      render: error.message,
+      type: "error",
+      isLoading: false,
+    });
+  } finally {
+    setDeletingId(null);
+    // Remove Loading Message
+    removeNotification(deleteLoadingId as Id);
+  }
+};
   // ============ End ToDo dApp Functions ============ //
 
   
   // step 7 - Handle Submit Form
-  const onSubmit = async () => {};
-
+const onSubmit = async (values: { name: string; description: string }) => {
+  
+  // Check Whether Contract Initialized or not
+  if (isContractInitialized !== true) {
+    await initializeContract(); // initialize the contract if it's not initialized before
+  }
+  
+  // Check Whether Form is for Create or Update the Task
+  if (!!updateId) {
+    await updateTask(values); // Call updateTask for Update the task
+  } else {
+    await createNewTask(values); // Call createNewTask for Create a new task
+  }
+};
   const onEditHandle = (data: ITodoObject) => {
     // set the UpdateId state
     setUpdateId(data.taskId);

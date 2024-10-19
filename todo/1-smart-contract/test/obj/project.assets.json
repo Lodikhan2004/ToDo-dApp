@@ -12351,19 +12351,19 @@
     ]
   },
   "packageFolders": {
-    "/Users/harsh/.nuget/packages/": {}
+    "C:\\Users\\$ DELL PRECISION $\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/harsh/Documents/D/Aelf/aelf-samples/todo/1-smart-contract/test/ToDo.Tests.csproj",
+      "projectUniqueName": "C:\\Users\\$ DELL PRECISION $\\aelf-samples\\todo\\1-smart-contract\\test\\ToDo.Tests.csproj",
       "projectName": "ToDo.Tests",
-      "projectPath": "/Users/harsh/Documents/D/Aelf/aelf-samples/todo/1-smart-contract/test/ToDo.Tests.csproj",
-      "packagesPath": "/Users/harsh/.nuget/packages/",
-      "outputPath": "/Users/harsh/Documents/D/Aelf/aelf-samples/todo/1-smart-contract/test/obj/",
+      "projectPath": "C:\\Users\\$ DELL PRECISION $\\aelf-samples\\todo\\1-smart-contract\\test\\ToDo.Tests.csproj",
+      "packagesPath": "C:\\Users\\$ DELL PRECISION $\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\$ DELL PRECISION $\\aelf-samples\\todo\\1-smart-contract\\test\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/harsh/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\$ DELL PRECISION $\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net6.0"
@@ -12375,8 +12375,8 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "projectReferences": {
-            "/Users/harsh/Documents/D/Aelf/aelf-samples/todo/1-smart-contract/src/ToDo.csproj": {
-              "projectPath": "/Users/harsh/Documents/D/Aelf/aelf-samples/todo/1-smart-contract/src/ToDo.csproj"
+            "C:\\Users\\$ DELL PRECISION $\\aelf-samples\\todo\\1-smart-contract\\src\\ToDo.csproj": {
+              "projectPath": "C:\\Users\\$ DELL PRECISION $\\aelf-samples\\todo\\1-smart-contract\\src\\ToDo.csproj"
             }
           }
         }
@@ -12454,12 +12454,26 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[6.0.33, 6.0.33]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[6.0.33, 6.0.33]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Ref",
+            "version": "[6.0.33, 6.0.33]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.401/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.402\\RuntimeIdentifierGraph.json"
       }
     }
   }
